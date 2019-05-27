@@ -1,0 +1,430 @@
+Dear professor Silva,
+
+Please find the test results below for my back-end. I have successfully implemented most of the functions that you require, with the exception of "AssignmentGrade". I asked you about this issue on Slack and I still haven't been able to found a solution. Whenever the function addAssignmentGrade is run, it tries to insert both AssignmentId and assignmentId into the AssignmentGrade table, despite that I never specified AssignmentId anywhere in my code. 
+
+A lot of the tests that you see didn't pass are actually been resolved already. As you can see, I implement the restriction for a certain operations in my code as you instruct. However, the test somehow still does not find it satisfying. Please see my comment below any test that does not pass as I point to the proof of my implementation. For some of them you might need to run the command on my heroku link, which is https://desolate-sands-94252.herokuapp.com/ For some of them, you can actually just need to take a look at the index.js file.
+
+I'm sorry if I does not make this easy for to review. Please let me know if you have any question.
+
+Thank you.
+Tony
+
+========================================================================================================================
+
+Hello Tests
+    ✓ should say hello (68ms)
+  Login Tests
+    ✓ should login user (43ms)
+    ✓ should not login a user with invalid credentials (16ms)
+    ✓ should not list users without login (8ms)
+    ✓ should not retrieve current user without login (7ms)
+  Logout Tests
+    ✓ should logout a logged in user (15ms)
+  Invalid Logout Tests
+    ✓ should not log out a user without an existing session (7ms)
+  Retrieve current user
+    ✓ should get the current user (11ms)
+  List Users
+    ✓ should list users (14ms)
+    ✓ should list students (26ms)
+
+    ✎ todo should list faculty
+      https://desolate-sands-94252.herokuapp.com/
+      *** Already implemeted
+        query{
+          faculties{id name role email}
+        }
+
+    ✎ todo should get a single user
+      https://desolate-sands-94252.herokuapp.com/
+      *** Already implemented 
+        query{
+          users{id name role email}
+        }
+
+    ✎ todo should get a student
+      https://desolate-sands-94252.herokuapp.com/
+      *** Already implemented 
+        query{
+          students{id name role email}
+        }
+
+
+  User Creation
+    ✕ should create a user (69ms)
+      https://desolate-sands-94252.herokuapp.com/
+      *** Already implemented
+        mutation {
+          createUser(name: "new name", role:"Student", email: "newUser@example.com", password:"new-user-password") {id name role email}
+        }
+
+    ✎ todo should validate user email format
+      *** Not sure what this means
+
+  Course Operations
+    ✎ todo should create a course
+      *** Already implemented
+      https://desolate-sands-94252.herokuapp.com/
+      mutation {
+        createCourse(name:"Machine learning", facultyId: 2) {id name}
+      }
+
+  Assignment Operations
+    ✎ todo should create an assignment by faculty
+      *** Already implemented, but assignment is created with courseId due to the One-to-Many relationship between Course
+      and Assignment as I defined in my model
+      https://desolate-sands-94252.herokuapp.com/
+      mutation{
+        createAssignment(name:"Final project",courseId:1){name, course {id name}}
+      }
+
+    ✎ todo should assign a student a grade for an assignment
+      *** Already implemented, but I ran into an error that is still not resolved. I asked you about this issue via Slack
+      https://desolate-sands-94252.herokuapp.com/
+      mutation{
+        addAssignmentGrade(userId:4, assignmentId: 1, grade: 3.9) {id userId assignmentId grade}
+      }
+
+  Enforce student authorizations
+    ✕ should not let student create a user (3ms)
+      *** Already implemented
+      (index.js)
+      createUser: makeResolver((root, args, context, info) => {
+        return db.User.create({ name: args.name,email: args.email, 
+                                role: args.role, 
+                                ...genSaltHashPassword(args.password)});
+        }, {role: ['Admin']}),
+
+
+    ✎ todo should not let student create a course
+      *** Already implemented
+      (index.js)
+      createCourse: makeResolver((root, args, context) => {
+          return db.Course.create({
+            name: args.name, 
+            facultyId: args.facultyId,
+          });
+        }, {roles: ['Admin']}),
+
+    ✎ todo should not let student update a course
+      *** the function update a course is not defined in the template
+
+
+    ✎ todo should not let students delete a course
+      *** Already implemented
+      (index.js)
+      deleteCourse: makeResolver((root, args, context, info) => {
+          return db.Course.destroy({
+            where: {id: args.courseId}});
+        }, {roles: ['Admin']}),
+
+    ✎ todo should not let students create an assignment
+       *** Already implemented
+      (index.js)
+      createAssignment: makeResolver((root, args, context) => {
+          return db.Assignment.create({
+            name: args.name, 
+            courseId: args.courseId,
+          });
+        }, {roles: ['Admin','Faculty']}),
+
+    ✎ todo should not let students assign a grade
+      *** Already implemented, although this function does not work properly due to the issue stated above with AssignmentGrade
+      (index.js)
+       addAssignmentGrade: makeResolver((root, args, context, info) => {
+            return db.AssignmentGrade.create({
+              userId: args.userId, 
+              assignmentId: args.assignmentId, 
+              grade: args.grade});
+          },{roles: ['Admin','Faculty']}), 
+
+
+  Enforce faculty authorization
+    ✕ should not let a faculty create a user (1ms)
+      *** Already implemented
+      (index.js)
+      createUser: makeResolver((root, args, context, info) => {
+        return db.User.create({ name: args.name,email: args.email, 
+                                role: args.role, 
+                                ...genSaltHashPassword(args.password)});
+        }, {role: ['Admin']}),
+
+    ✎ todo should not let faculty create a course
+      *** Already implemented
+      (index.js)
+      createCourse: makeResolver((root, args, context) => {
+          return db.Course.create({
+            name: args.name, 
+            facultyId: args.facultyId,
+          });
+        }, {roles: ['Admin']}),
+
+    ✎ todo should not let faculty delete a course
+      *** Already implemented
+      (index.js)
+      deleteCourse: makeResolver((root, args, context, info) => {
+          return db.Course.destroy({
+            where: {id: args.courseId}});
+        }, {roles: ['Admin']}),
+
+  ● User Creation › should create a user
+
+    Network error: Response not successful: Received status code 400
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at Object.error (node_modules/apollo-client/bundle.esm.js:1032:48)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:134:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.error (node_modules/zen-observable/lib/Observable.js:224:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:184:20
+
+  ● Course Operations › should create a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Assignment Operations › should create an assignment by faculty
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Assignment Operations › should assign a student a grade for an assignment
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let student create a user
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let student create a user
+
+    expect(received).toEqual(expected)
+
+    Difference:
+
+    - Expected
+    + Received
+
+    - GraphQL error: Operation Not Permitted
+    + Cannot read property 'mutate' of undefined
+
+      346 |       });
+      347 |     } catch (e) {
+    > 348 |       expect(e.message).toEqual('GraphQL error: Operation Not Permitted');
+          |                         ^
+      349 |     }
+      350 |   });
+      351 |
+
+      at toEqual (index.test.js:348:25)
+      at tryCatch (node_modules/regenerator-runtime/runtime.js:45:40)
+      at Generator.invoke [as _invoke] (node_modules/regenerator-runtime/runtime.js:271:22)
+      at Generator.prototype.(anonymous function) [as throw] (node_modules/regenerator-runtime/runtime.js:97:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:24)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:29:9)
+
+  ● Enforce student authorizations › should not let student create a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let student update a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let students delete a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let students create an assignment
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce student authorizations › should not let students assign a grade
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce faculty authorization › should not let a faculty create a user
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce faculty authorization › should not let a faculty create a user
+
+    expect(received).toEqual(expected)
+
+    Difference:
+
+    - Expected
+    + Received
+
+    - GraphQL error: Operation Not Permitted
+    + Cannot read property 'mutate' of undefined
+
+      372 |       });
+      373 |     } catch (e) {
+    > 374 |       expect(e.message).toEqual('GraphQL error: Operation Not Permitted');
+          |                         ^
+      375 |     }
+      376 |   });
+      377 |
+
+      at toEqual (index.test.js:374:25)
+      at tryCatch (node_modules/regenerator-runtime/runtime.js:45:40)
+      at Generator.invoke [as _invoke] (node_modules/regenerator-runtime/runtime.js:271:22)
+      at Generator.prototype.(anonymous function) [as throw] (node_modules/regenerator-runtime/runtime.js:97:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:24)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:29:9)
+
+  ● Enforce faculty authorization › should not let faculty create a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+  ● Enforce faculty authorization › should not let faculty delete a course
+
+    GraphQL error: Bad Login or Password
+
+      at new ApolloError (node_modules/apollo-client/bundle.esm.js:60:28)
+      at QueryManager.<anonymous> (node_modules/apollo-client/bundle.esm.js:980:65)
+      at step (node_modules/tslib/tslib.js:133:27)
+      at Object.next (node_modules/tslib/tslib.js:114:57)
+      at node_modules/tslib/tslib.js:107:75
+      at Object.__awaiter (node_modules/tslib/tslib.js:103:16)
+      at Object.__awaiter [as next] (node_modules/apollo-client/bundle.esm.js:972:70)
+      at notifySubscription (node_modules/zen-observable/lib/Observable.js:130:18)
+      at onNotify (node_modules/zen-observable/lib/Observable.js:165:3)
+      at SubscriptionObserver.next (node_modules/zen-observable/lib/Observable.js:219:7)
+      at node_modules/apollo-link-http/src/httpLink.ts:142:20
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 14 todo, 10 passed, 27 total
+Snapshots:   0 total
+Time:        2.128s

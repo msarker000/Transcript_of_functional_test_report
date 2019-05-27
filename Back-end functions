@@ -1,0 +1,87 @@
+link: https://desolate-sands-94252.herokuapp.com/
+
+#must login first to get the token. Then apply the token to each operation below
+mutation {
+  loginUser(email: "admin@example.com", password:"password") {
+    token, user{name, id, role}
+  }
+}
+
+
+#Query all users
+query{
+  users{id name role email}
+}
+
+#Query current user
+query{
+  currentUser{id name role email}
+}
+
+
+#Query all students
+query {students{id,name,role, email}}
+
+#Query all faculties
+query{
+  faculties{id name role email}
+}
+
+#Query all courses
+query {
+  courses {id, name, 
+    students {id name role} 
+    faculty{id name}}
+}
+
+#Query all student courses
+query{
+  studentcourses{courseId userId}
+}
+
+#Query all assignments
+query{
+  assignments{id name course {id name}}
+}
+
+
+#Create new user
+mutation {
+  createUser(name: "new name", role:"Student", email: "newUser@example.com", password:"new-user-password") {id name role email}
+}
+
+#Create new course
+mutation {
+  createCourse(name:"Machine learning", facultyId: 2) {id name}
+}
+
+#Add student course
+mutation {
+  addStudentCourse(userId:4, courseId:4) {id userId courseId}
+}
+
+#Add new assignment
+mutation{
+  createAssignment(name:"Final project",courseId:1){name, course {id name}}
+}
+
+#Add assignment grade (Does not work for now)
+mutation{
+  addAssignmentGrade(userId:4, assignmentId: 1, grade: 3.9) {id userId assignmentId grade}
+}
+
+#Delete a course
+mutation{
+  deleteCourse(courseId:3) {id}
+}
+
+
+#Delete an assignment
+mutation{
+  deleteAssignment(assignmentId:4) {id}
+}
+
+#remove student from course
+mutation{
+  delStudentCourse(studentId:2,courseId:1) {id}
+}
